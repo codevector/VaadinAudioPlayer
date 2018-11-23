@@ -64,7 +64,7 @@ public class AudioStreamPlayer {
 	public void play() {
 		int currentPosition = getPosition();
 		int offset = currentPosition % timePerChunk;
-		play(offset,true);
+		play(offset,false);
 	}
 	
 	public void play(boolean useCrossFade) {
@@ -72,16 +72,13 @@ public class AudioStreamPlayer {
 	}
 	
 	private void play(int timeOffset, boolean useCrossFade) {
-		logger.info(LogUtils.prefix("PLAY"));
+	    chunkPositionClock = null;
+	    logger.info(LogUtils.prefix("PLAY"));
 		if (playerManager.getCurrentPlayer() == null) {
 			Log.error(this, "current player is null");
 			return;
 		}
-
 		chunkPosition = timeOffset;
-
-		chunkPositionClock = new Duration();
-
 		if (useCrossFade) {
 			// use cross fade to blend prev and current audio together
 			int overlapTime = ((int) (chunkOverlapTime / playbackSpeed));
@@ -91,7 +88,7 @@ public class AudioStreamPlayer {
 			// simply play the audio
 			playerManager.getCurrentPlayer().play(chunkPosition);
 		}
-		
+		chunkPositionClock = new Duration();
 		// start timer to play next chunk of audio
 		scheduleNextChunk();
 		
@@ -248,7 +245,7 @@ public class AudioStreamPlayer {
 			stop();
 		} else {
 			playerManager.moveToNextPlayer();
-			play(true);
+			play(false);
 		}
 	}
 	

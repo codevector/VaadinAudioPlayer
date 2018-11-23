@@ -5,7 +5,7 @@
 	<groupId>org.vaadin.addon.audio</groupId>
 	<artifactId>AudioPlayer</artifactId>
 	<packaging>jar</packaging>
-	<version>1.1</version>
+	<version>1.5</version>
 	<name>AudioPlayer Add-on</name>
 
 	<prerequisites>
