@@ -61,4 +61,16 @@ public class BufferPlayerManager {
     public BufferPlayer[] getPlayers() {
         return players;
     }
+    
+    public void stopAllPlayers() {
+        int currentPlayers =  players != null ? players.length : 0;
+        for(int i = 0 ; i < currentPlayers; i++) {
+            if ( players[i] != null )
+             {
+                players[i].stop();
+             }
+        }
+        
+        
+    }
 }

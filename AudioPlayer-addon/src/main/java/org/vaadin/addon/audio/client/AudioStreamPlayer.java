@@ -86,7 +86,12 @@ public class AudioStreamPlayer {
 					chunkPosition, volume, overlapTime);
 		} else {
 			// simply play the audio
-			playerManager.getCurrentPlayer().play(chunkPosition);
+			if(position == 0) {
+				playerManager.getCurrentPlayer().play(chunkPosition);
+			}else {
+				playerManager.getCurrentPlayer().play(chunkPosition + 500);
+			}
+			
 		}
 		chunkPositionClock = new Duration();
 		// start timer to play next chunk of audio
@@ -210,7 +215,7 @@ public class AudioStreamPlayer {
 			// for some reason the first chunk is fading out 500ms early (or the second chunk is 500ms late)
 			// TODO: first chunk should work the same way as others
 			// truncating after decimal doesn't matter since we are already in milliseconds
-			int time = ((int) (chunkDuration - chunkOffset - overlapDuration));
+			int time = ((int) (chunkDuration - chunkOffset ));
 			if (time < 0) {
 				time = 0;
 			}
@@ -240,7 +245,19 @@ public class AudioStreamPlayer {
 	private void playNextChunk() {
 		// stop the audio if we've reached the end
 		int oldPosition = position;
-		position += timePerChunk;
+		int posWithChunk = getPosition();
+		int cposition = position + timePerChunk;
+		
+		if(cposition - posWithChunk > 20) {
+			Log.message(this, "reschedule PlayNextChunk new position with chunk " + posWithChunk + " , del-position : " +  (cposition - posWithChunk) );
+			reschedulePlayerNextChunkTimer(25);
+			return ;
+		}else {
+			position = cposition;
+		}
+				
+		Log.message(this, "PlayNextChunk new position " + cposition + " , old position : " + oldPosition + ", Time per chunk " + timePerChunk);
+		Log.message(this, "PlayNextChunk new position with chunk " + posWithChunk + " , del-position : " +  (cposition - posWithChunk) );
 		if (oldPosition+getChunkPosition() >= getDuration()) {
 			stop();
 		} else {
@@ -248,6 +265,12 @@ public class AudioStreamPlayer {
 			play(false);
 		}
 	}
+	
+	private void reschedulePlayerNextChunkTimer(int millis) {
+		playNextChunkTimer.cancel();
+		playNextChunkTimer.schedule(millis);
+	}
+	
 	
 	private void setPersistingPlayerOptions(BufferPlayer player) {
 		if (player == null) {
@@ -285,9 +308,9 @@ public class AudioStreamPlayer {
 	public void setPosition(final int millis) {
 		logger.info(LogUtils.prefix("set position to " + millis));
 		final boolean isPlaying = playerManager.getCurrentPlayer() != null ? playerManager.getCurrentPlayer().isPlaying() : false;
-		if (isPlaying) {
-			playerManager.getCurrentPlayer().stop();
-		}
+		
+		playerManager.stopAllPlayers();
+		
 		chunkPositionClock = null;
 		
 		playNextChunkTimer.cancel();
